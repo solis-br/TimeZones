@@ -27,6 +27,7 @@ def load():
             {"label": "Mountain",    "zone": "America/Denver"},
             {"label": "Central",     "zone": "America/Chicago"},
             {"label": "Eastern",     "zone": "America/New_York"},
+            {"label": "Atlantic",     "zone": "America/Halifax"},
             {"label": "UTC",         "zone": "Etc/UTC"},
             {"label": "London",      "zone": "Europe/London"},
             {"label": "Queensland",  "zone": "Australia/Brisbane"}
