@@ -18,6 +18,7 @@ $TimeZoneMap = @{
     "America/Denver"       = "Mountain Standard Time"
     "America/Chicago"      = "Central Standard Time"
     "America/New_York"     = "Eastern Standard Time"
+    "America/Halifax"      = "Atlantic Standard Time"
     "Etc/UTC"              = "UTC"
     "Europe/London"        = "GMT Standard Time"
     "Australia/Brisbane"   = "E. Australia Standard Time"
@@ -38,6 +39,7 @@ function Get-DefaultConfig {
             @{ label = "Mountain";   zone = "America/Denver" }
             @{ label = "Central";    zone = "America/Chicago" }
             @{ label = "Eastern";    zone = "America/New_York" }
+            @{ label = "Atlantic";    zone = "America/Halifax" }
             @{ label = "UTC";        zone = "Etc/UTC" }
             @{ label = "London";     zone = "Europe/London" }
             @{ label = "Queensland"; zone = "Australia/Brisbane" }
