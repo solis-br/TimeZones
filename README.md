@@ -12,11 +12,14 @@ Any issues with displaying, remove the TimeZones.json file in your profile.
 
 
 Horizontal (use the '-H' argument when running:
-<img width="2442" height="207" alt="image" src="https://github.com/user-attachments/assets/264a03fe-6d36-4ea6-8ce3-411a22e3e8a1" />
+
+<img width="256" height="1531" alt="image" src="https://github.com/user-attachments/assets/daf02d30-6134-4608-8d1c-6ea35487b9df" />
+
+
 
 
 Vertical (default layout):
 
-<img width="236" height="1626" alt="image" src="https://github.com/user-attachments/assets/ba2e5013-b6cc-4b7f-a63a-a3d271e714c9" />
+
 
 
