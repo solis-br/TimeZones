@@ -6,47 +6,50 @@ import argparse
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from datetime import datetime
-
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PySide6.QtGui import QIcon
 from PySide6.QtCore import Qt, QTimer
+from PySide6.QtWidgets import (
+    QApplication,
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QSystemTrayIcon,
+    QMenu
+)
 
-CFG = Path.home() / "TimeZones.json"
-
+CFG = Path("/home/stewart/Archive/Scripts/Python/TimeZones.json")
+ICON = Path("/home/stewart/Archive/Scripts/Python/TimeZones.ico")
 
 def load():
     if CFG.exists():
         return json.loads(CFG.read_text())
-
     return {
         "zones": [
-            {"label": "Hawaii","zone": "Pacific/Honolulu"},
-            {"label": "Aleutian","zone": "America/Adak"},
-            {"label": "Alaska","zone": "America/Anchorage"},
-            {"label": "Pacific",     "zone": "America/Los_Angeles"},
-            {"label": "Arizona",     "zone": "America/Phoenix"},
-            {"label": "Mountain",    "zone": "America/Denver"},
-            {"label": "Central",     "zone": "America/Chicago"},
-            {"label": "Eastern",     "zone": "America/New_York"},
-            {"label": "Atlantic",     "zone": "America/Halifax"},
-            {"label": "UTC",         "zone": "Etc/UTC"},
-            {"label": "London",      "zone": "Europe/London"},
-            {"label": "Queensland",  "zone": "Australia/Brisbane"}
+            {"label": "Hawaii",        "zone": "Pacific/Honolulu"},
+            {"label": "Aleutian",      "zone": "America/Adak"},
+            {"label": "Alaska",        "zone": "America/Anchorage"},
+            {"label": "Pacific",       "zone": "America/Los_Angeles"},
+            {"label": "Arizona",       "zone": "America/Phoenix"},
+            {"label": "Mountain",      "zone": "America/Denver"},
+            {"label": "Central",       "zone": "America/Chicago"},
+            {"label": "Eastern",       "zone": "America/New_York"},
+            {"label": "Atlantic",      "zone": "America/Halifax"},
+            {"label": "Newfoundland", "zone": "America/St_Johns"},
+            {"label": "UTC",           "zone": "Etc/UTC"},
+            {"label": "London",        "zone": "Europe/London"},
+            {"label": "Queensland",    "zone": "Australia/Brisbane"}
         ]
     }
-
 
 def save(cfg):
     CFG.write_text(json.dumps(cfg, indent=2))
 
-
 class W(QWidget):
     def __init__(self, horizontal=False):
         super().__init__()
-
         self.cfg = load()
-
         self.setWindowTitle("Time Zones")
-
         try:
             self.local_zone = (
                 Path("/etc/localtime")
@@ -54,25 +57,20 @@ class W(QWidget):
                 .relative_to("/usr/share/zoneinfo")
                 .as_posix()
             )
+
         except Exception:
             tz = datetime.now().astimezone().tzinfo
             self.local_zone = getattr(tz, "key", str(tz))
-
         print(f"Local timezone: {self.local_zone}")
-
         layout = QVBoxLayout(self)
-
         if horizontal:
             self.list = QHBoxLayout()
         else:
             self.list = QVBoxLayout()
-
         layout.addLayout(self.list)
-
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.refresh)
-        self.timer.start(30000)
-
+        self.timer.start(15000)
         self.refresh()
 
     def refresh(self):
@@ -83,27 +81,26 @@ class W(QWidget):
 
         for entry in self.cfg["zones"]:
             dt = datetime.now(ZoneInfo(entry["zone"]))
-
             if entry["zone"] == self.local_zone:
                 title = f"<b>{entry['label']} (Local)</b>"
                 style = """
                     QLabel {
-                        font-size: 25px;
-                        background-color: goldenrod;
-                        color: black;
+                        font-size: 18px;
+                        background-color: dimgray;
+                        color: white;
                         border: 2px solid #b8860b;
-                        border-radius: 6px;
-                        padding: 10px;
+                        border-radius: 5px;
+                        padding: 9px;
                     }
                 """
             else:
                 title = f"<b>{entry['label']}</b>"
                 style = """
                     QLabel {
-                        font-size: 20px;
+                        font-size: 18px;
                         border: 1px solid gray;
-                        border-radius: 6px;
-                        padding: 10px;
+                        border-radius: 5px;
+                        padding: 9px;
                     }
                 """
 
@@ -115,14 +112,18 @@ class W(QWidget):
             )
 
             label = QLabel(text)
-            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            label.setStyleSheet(style)
+            label.setAlignment(
+                Qt.AlignmentFlag.AlignCenter
+            )
 
+            label.setStyleSheet(style)
             self.list.addWidget(label)
 
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="World Clock")
+    parser = argparse.ArgumentParser(
+        description="World Clock"
+    )
+
     parser.add_argument(
         "-H",
         "--horizontal",
@@ -131,10 +132,60 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
     app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
+    icon = QIcon(str(ICON))
+    app.setWindowIcon(icon)
+    window = W(
+        horizontal=args.horizontal
+    )
 
-    window = W(horizontal=args.horizontal)
     window.show()
+    tray = QSystemTrayIcon()
+    tray.setIcon(icon)
+    tray.setToolTip("Time Zones")
+    menu = QMenu()
+    show_action = menu.addAction(
+        "Show / Hide"
+    )
 
-    sys.exit(app.exec())
+    menu.addSeparator()
+    quit_action = menu.addAction(
+        "Quit"
+    )
+
+    tray.setContextMenu(menu)
+
+    def toggle_window():
+        if window.isVisible():
+            window.hide()
+
+        else:
+            window.show()
+            window.raise_()
+            window.activateWindow()
+
+    def quit_application():
+        tray.hide()
+        app.quit()
+
+    show_action.triggered.connect(
+        toggle_window
+    )
+
+    quit_action.triggered.connect(
+        quit_application
+    )
+
+    def tray_activated(reason):
+        if reason == QSystemTrayIcon.ActivationReason.Trigger:
+            toggle_window()
+
+    tray.activated.connect(
+        tray_activated
+    )
+
+    tray.show()
+    sys.exit(
+        app.exec()
+    )
